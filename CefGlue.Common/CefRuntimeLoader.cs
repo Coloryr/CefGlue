@@ -35,8 +35,18 @@ namespace Xilium.CefGlue.Common
             var probingPaths = GetSubProcessPaths(basePath);
             var subProcessPath = probingPaths.FirstOrDefault(p => File.Exists(p));
             if (subProcessPath == null)
-                throw new FileNotFoundException($"Unable to find SubProcess. Probed locations: {string.Join(Environment.NewLine, probingPaths)}");
-
+            {
+                if (!string.IsNullOrWhiteSpace(settings.BrowserSubprocessPath))
+                {
+                    probingPaths = GetSubProcessPaths(settings.BrowserSubprocessPath);
+                    subProcessPath = probingPaths.FirstOrDefault(p => File.Exists(p));
+                    if (subProcessPath == null)
+                    {
+                        throw new FileNotFoundException($"Unable to find SubProcess. Probed locations: {string.Join(Environment.NewLine, probingPaths)}");
+                    }
+                }
+            }
+                
             settings.BrowserSubprocessPath = subProcessPath;
 
             switch (CefRuntime.Platform)
