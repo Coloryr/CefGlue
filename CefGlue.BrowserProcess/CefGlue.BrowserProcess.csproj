@@ -10,6 +10,7 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <PublishCommonConfig>Configuration=$(Configuration);Platform=$(Platform);TargetFramework=$(TargetFramework);IsPublishing=True;PublishTrimmed=True;SelfContained=True;RuntimeIdentifier=</PublishCommonConfig>
     <IsEditbinEnabled>True</IsEditbinEnabled>
+    <Platforms>x64;ARM64;AnyCPU</Platforms>
   </PropertyGroup>
 
   <ItemGroup>

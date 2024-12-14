@@ -8,6 +8,7 @@
     <RootNamespace>Xilium.CefGlue.Demo.Avalonia</RootNamespace>
     <RollForward>Major</RollForward>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Platforms>x64;ARM64;AnyCPU</Platforms>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug_WindowlessRender'">

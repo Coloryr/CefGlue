@@ -1,9 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DotnetVersion)</TargetFramework>
     <AssemblyName>Xilium.CefGlue.Common.Shared</AssemblyName>
     <RootNamespace>Xilium.CefGlue.Common.Shared</RootNamespace>
+    <Platforms>x64;ARM64;AnyCPU</Platforms>
   </PropertyGroup>
 
   <ItemGroup>

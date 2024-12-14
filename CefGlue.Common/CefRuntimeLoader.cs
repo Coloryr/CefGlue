@@ -31,22 +31,9 @@ namespace Xilium.CefGlue.Common
 
             settings.UncaughtExceptionStackSize = 100; // for uncaught exception event work properly
 
-            var basePath = AppContext.BaseDirectory;
-            var probingPaths = GetSubProcessPaths(basePath);
-            var subProcessPath = probingPaths.FirstOrDefault(p => File.Exists(p));
-            if (subProcessPath == null)
-            {
-                if (!string.IsNullOrWhiteSpace(settings.BrowserSubprocessPath))
-                {
-                    probingPaths = GetSubProcessPaths(settings.BrowserSubprocessPath);
-                    subProcessPath = probingPaths.FirstOrDefault(p => File.Exists(p));
-                    if (subProcessPath == null)
-                    {
-                        throw new FileNotFoundException($"Unable to find SubProcess. Probed locations: {string.Join(Environment.NewLine, probingPaths)}");
-                    }
-                }
-            }
-                
+            var subProcessPath = FindSubProcessPaths(settings) 
+                ?? throw new FileNotFoundException($"Unable to find SubProcess.");
+
             settings.BrowserSubprocessPath = subProcessPath;
 
             switch (CefRuntime.Platform)
@@ -56,17 +43,26 @@ namespace Xilium.CefGlue.Common
                     break;
 
                 case CefRuntimePlatform.MacOS:
-                    var resourcesPath = Path.Combine(basePath, "Resources");
+                    string resourcesPath;
+                    if (!string.IsNullOrWhiteSpace(settings.ResourcesDirPath))
+                    {
+                        resourcesPath = settings.ResourcesDirPath;
+                    }
+                    else
+                    {
+                        resourcesPath = Path.Combine(AppContext.BaseDirectory, "Resources");
+                    }
                     if (!Directory.Exists(resourcesPath))
                     {
                         throw new FileNotFoundException($"Unable to find Resources folder");
                     }
-
+                    
+                    var info1 = new DirectoryInfo(resourcesPath);
                     settings.NoSandbox = true;
                     settings.MultiThreadedMessageLoop = false;
                     settings.ExternalMessagePump = true;
-                    settings.MainBundlePath = basePath;
-                    settings.FrameworkDirPath = basePath;
+                    settings.MainBundlePath = info1.Parent!.FullName;
+                    settings.FrameworkDirPath = info1.Parent!.FullName;
                     settings.ResourcesDirPath = resourcesPath;
                     break;
                 
@@ -110,13 +106,36 @@ namespace Xilium.CefGlue.Common
             }
         }
 
+        private static string FindSubProcessPaths(CefSettings settings)
+        {
+            var basePath = AppContext.BaseDirectory;
+            var probingPaths = GetSubProcessPaths(basePath);
+            var subProcessPath = probingPaths.FirstOrDefault(p => File.Exists(p));
+            if (subProcessPath != null)
+            {
+                return subProcessPath;
+            }
+            if (!string.IsNullOrWhiteSpace(settings.BrowserSubprocessPath))
+            {
+                probingPaths = GetSubProcessPaths(settings.BrowserSubprocessPath);
+                subProcessPath = probingPaths.FirstOrDefault(p => File.Exists(p));
+                if (subProcessPath != null)
+                {
+                    return subProcessPath;
+                }
+            }
+            // The executing DLL might not be in the current domain directory (plugins scenario)
+            var baseDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            if (baseDirectory != null)
+            {
+                return probingPaths.FirstOrDefault(p => File.Exists(p));
+            }
+
+            return null;
+        }
+
         private static IEnumerable<string> GetSubProcessPaths(string baseDirectory)
         {
-            yield return Path.Combine(baseDirectory, DefaultBrowserProcessDirectory, BrowserProcessFileName);
-            yield return Path.Combine(baseDirectory, BrowserProcessFileName);
-
-            // The executing DLL might not be in the current domain directory (plugins scenario)
-            baseDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             yield return Path.Combine(baseDirectory, DefaultBrowserProcessDirectory, BrowserProcessFileName);
             yield return Path.Combine(baseDirectory, BrowserProcessFileName);
         }

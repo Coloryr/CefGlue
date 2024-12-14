@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>$(DotnetVersion)</TargetFramework>
     <IsPackable>false</IsPackable>
+    <Platforms>x64;ARM64;AnyCPU</Platforms>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug_WindowlessRender'">
